@@ -6,12 +6,16 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
+#include <iostream>
 #include <stdexcept>
 
 class Interval {
  public:
   Interval();
   explicit Interval(float begin, float end);
+
+  Interval& operator=(const Interval& lhs);
+
   float& begin();
   float begin() const;
 
@@ -21,6 +25,7 @@ class Interval {
   float get_range();
 
  private:
+  // TODO(Roger): Replace with std::array
   float range[2];
 };
 
@@ -36,6 +41,12 @@ Interval::Interval(float begin, float end) {
   range[1] = end;
 }
 
+Interval& Interval::operator=(const Interval& lhs) {
+  range[0] = lhs.range[0];
+  range[1] = lhs.range[1];
+  return *this;
+}
+
 float& Interval::begin() { return range[0]; }
 float Interval::begin() const { return range[0]; }
 
@@ -44,23 +55,23 @@ float Interval::end() const { return range[1]; }
 
 float Interval::get_range() { return end() - begin(); }
 
-bool overlaps(const Interval& one, const Interval& two) {
-  if (two.begin() < one.end() && one.begin() < two.end()) {
+bool overlaps(const Interval& one, const Interval& lhs) {
+  if (lhs.begin() < one.end() && one.begin() < lhs.end()) {
     return true;
   }
-  if (one.begin() < two.end() && two.begin() < one.end()) {
+  if (one.begin() < lhs.end() && lhs.begin() < one.end()) {
     return true;
   }
   return false;
 }
 
-float get_enlargement(const Interval& one, const Interval& two) {
+float get_enlargement(const Interval& rhs, const Interval& lhs) {
   float total_enlargement = 0.f;
-  if (one.end() < two.end()) {
-    total_enlargement += two.end() - one.end();
+  if (rhs.end() < lhs.end()) {
+    total_enlargement += lhs.end() - rhs.end();
   }
-  if (two.begin() < one.begin()) {
-    total_enlargement += one.begin() - two.begin();
+  if (lhs.begin() < rhs.begin()) {
+    total_enlargement += rhs.begin() - lhs.begin();
   }
   return total_enlargement;
 }
@@ -73,6 +84,8 @@ class Rectangle {
 
   Interval& operator[](size_t index);
   Interval operator[](size_t index) const;
+
+  Rectangle& operator=(const Rectangle& rectangle);
 
   iterator begin();
   iterator end();
@@ -102,6 +115,12 @@ Interval Rectangle<N>::operator[](size_t index) const {
 }
 
 template <size_t N>
+Rectangle<N>& Rectangle<N>::operator=(const Rectangle<N>& rhs) {
+  std::copy(rhs.begin(), rhs.end(), begin());
+  return *this;
+}
+
+template <size_t N>
 typename Rectangle<N>::iterator Rectangle<N>::begin() {
   return bounds;
 }
@@ -123,7 +142,7 @@ typename Rectangle<N>::const_iterator Rectangle<N>::end() const {
 
 template <size_t N>
 void Rectangle<N>::reset() {
-  for (Interval interval : *this) {
+  for (Interval& interval : *this) {
     interval.begin() = LONG_MAX;
     interval.end() = LONG_MIN;
   }
@@ -132,7 +151,7 @@ void Rectangle<N>::reset() {
 template <size_t N>
 float Rectangle<N>::get_area() {
   float area = 1.f;
-  for (Interval interval : *this) {
+  for (Interval& interval : *this) {
     area *= interval.get_range();
   }
   return area;
@@ -149,23 +168,13 @@ void Rectangle<N>::adjust(const Rectangle& rectangle) {
 }
 
 template <size_t N>
-bool overlaps(const Rectangle<N>& one, const Rectangle<N>& two) {
+bool overlaps(const Rectangle<N>& rhs, const Rectangle<N>& lhs) {
   for (size_t index = 0; index < N; ++index) {
-    if (!overlaps(one[index], two[index])) {
+    if (!overlaps(rhs[index], lhs[index])) {
       return false;
     }
   }
   return true;
-}
-
-template <size_t N>
-float get_enlargement(const Rectangle<N>& one, const Rectangle<N>& two) {
-  // TODO(Roger): Improve the enlargement area.
-  float total_enlargement = 0.f;
-  for (size_t index = 0; index < N; ++index) {
-    total_enlargement += get_enlargement(one[index], two[index]);
-  }
-  return total_enlargement;
 }
 
 #endif  // SOURCE_RECTANGLE_HPP_

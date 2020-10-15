@@ -36,7 +36,7 @@ class RTree {
 
     bool is_leaf();
 
-    std::shared_ptr<Node> insert(SpatialObject new_entry);
+    std::shared_ptr<Node> insert(const SpatialObject &new_entry);
 
     SpatialObject entry[M];
     size_t size = 0;
@@ -55,7 +55,7 @@ class RTree {
 
   std::shared_ptr<Node> choose_node(const std::shared_ptr<Node> &current_node,
                                     const Rectangle<N> &box,
-                                    SpatialObject *entry);
+                                    SpatialObject *&entry);
 
   std::shared_ptr<Node> adjust_tree(const std::shared_ptr<Node> &parent,
                                     const std::shared_ptr<Node> &left,
@@ -119,8 +119,8 @@ bool RTree<N, ElemType, M, m>::Node::is_leaf() {
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
-RTree<N, ElemType, M, m>::Node::insert(SpatialObject new_entry) {
-  if (size + 1 < M) {
+RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
+  if (size < M) {
     entry[size++] = new_entry;
     return nullptr;
   }
@@ -159,7 +159,12 @@ bool RTree<N, ElemType, M, m>::empty() const {
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
                                       const ElemType &value) {
-  choose_leaf(root_pointer_, box, value);
+  std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
+  if (!splitted_node) {
+    return;
+  }
+  // TODO(ADE): Last part of insert is missing i.e. when the root overflow
+  // see R-tree gutman paper description.
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -173,37 +178,42 @@ RTree<N, ElemType, M, m>::choose_leaf(const std::shared_ptr<Node> &current_node,
     std::shared_ptr<Node> splitted_node = choose_leaf(next_node, box, value);
     return adjust_tree(current_node, next_node, splitted_node, entry);
   }
-  SpatialObject new_object;
-  new_object.box = box;
-  new_object.identifier = value;
-  return current_node->insert(new_object);
+  SpatialObject new_entry;
+  new_entry.box = box;
+  new_entry.identifier = value;
+  return current_node->insert(new_entry);
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
 RTree<N, ElemType, M, m>::choose_node(const std::shared_ptr<Node> &current_node,
                                       const Rectangle<N> &box,
-                                      SpatialObject *entry) {
-  float minimum_enlargement = get_enlargement((*current_node)[0].box, box);
+                                      SpatialObject *&entry) {
   float minimum_area = (*current_node)[0].box.get_area();
+
+  Rectangle<N> enlarged_box = (*current_node)[0].box;
+  enlarged_box.adjust(box);
+  float minimum_enlargement = enlarged_box.get_area() - minimum_area;
+
   float enlargement, area;
   std::shared_ptr<Node> node = (*current_node)[0].child_pointer;
-  for (SpatialObject current_entry : *current_node) {
-    enlargement = get_enlargement(current_entry.box, box);
+
+  entry = &(*current_node)[0];
+  std::cout << "Current minimum" << entry->box << std::endl;
+  for (SpatialObject &current_entry : *current_node) {
+    std::cout << "Comparing with " << current_entry.box << std::endl;
     area = current_entry.box.get_area();
-    if (enlargement < minimum_enlargement) {
+
+    enlarged_box = current_entry.box;
+    enlarged_box.adjust(box);
+    enlargement = enlarged_box.get_area() - area;
+
+    if (enlargement < minimum_enlargement ||
+        (enlargement == minimum_enlargement && area < minimum_area)) {
       minimum_enlargement = enlargement;
       minimum_area = area;
       node = current_entry.child_pointer;
       entry = &current_entry;
-      continue;
-    }
-    if (enlargement == minimum_enlargement && area < minimum_area) {
-      minimum_enlargement = enlargement;
-      minimum_area = area;
-      node = current_entry.child_pointer;
-      entry = &current_entry;
-      continue;
     }
   }
 
@@ -225,7 +235,7 @@ RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
   }
   SpatialObject new_entry;
   new_entry.box.reset();
-  for (SpatialObject current_entry : *right) {
+  for (SpatialObject &current_entry : *right) {
     new_entry.box.adjust(current_entry.box);
   }
   new_entry.child_pointer = right;
