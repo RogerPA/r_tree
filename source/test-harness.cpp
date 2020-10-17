@@ -1,11 +1,10 @@
-// Copyright Roger Peralta Aranibar
-
 #include "RTree.hpp"
 
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
 void press_enter_to_continue() {
   /* Use getline to stall until receiving input. */
@@ -25,7 +24,7 @@ void fail_test(const std::exception& e) {
  * test fails and points the caller to the proper file and line.
  */
 void do_check_condition(bool expr, const std::string& rationale,
-                        const std::string& file, int line) {
+  const std::string& file, int line) {
   /* It worked!  Congrats. */
   if (expr) {
     std::cout << "PASS: " << rationale << std::endl;
@@ -50,17 +49,17 @@ void do_check_condition(bool expr, const std::string& rationale,
 #define CHECK_CONDITION(expr, rationale) \
   do_check_condition(expr, rationale, __FILE__, __LINE__)
 
-/* Utility function to delimit the start and end of test cases. */
+ /* Utility function to delimit the start and end of test cases. */
 void print_banner(const std::string& header) {
   std::cout << std::endl << "Beginning test: " << header << std::endl;
   std::cout << std::setw(40) << std::setfill('-') << "" << std::setfill(' ')
-            << std::endl;
+    << std::endl;
 }
 
 /* Utility function to signal that a test isn't begin run. */
 void test_disabled(const std::string& header) {
   std::cout << "== Test " << header
-            << " NOT RUN: press ENTER to continue ==" << std::endl;
+    << " NOT RUN: press ENTER to continue ==" << std::endl;
 
   /* Pause for the user to hit enter. */
   press_enter_to_continue();
@@ -85,11 +84,35 @@ void basic_r_tree_test() try {
   CHECK_CONDITION(r_tree.empty(), "New KD tree is empty.");
 
   throw std::overflow_error("Testing Limits.");
-} catch (const std::exception& e) {
+}
+catch (const std::exception& e) {
   fail_test(e);
 }
 
 int main() {
-  basic_r_tree_test();
+  Rectangle<2> r;
+  r[0] = Interval(1, 2);
+  r[1] = Interval(1, 2);
+  Rectangle<2> r2;
+  r2[0] = Interval(2, 3);
+  r2[1] = Interval(1, 2);
+  for (Interval i : r) {
+    std::cout << i.begin() << " " << i.end() << std::endl;
+  }
+
+  std::cout << overlaps(r, r2) << std::endl;
+
+  RTree<2, std::string, 5>::Node my_node;
+  std::cout << "Printing the node" << std::endl;
+
+  for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
+    std::cout << "IN" << std::endl;
+  }
+
+  RTree<2, std::string, 5> r_tree;
+  r_tree.insert(r, "key");
+  std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
+
+  // basic_r_tree_test();
   return 0;
 }
