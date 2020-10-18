@@ -26,6 +26,7 @@ public:
       box = spatial.box;
       identifier = spatial.identifier;
       child_pointer = spatial.child_pointer;
+      return *this;
     }
   };
 
@@ -176,7 +177,7 @@ std::pair<size_t,size_t> RTree<N, ElemType, M, m>::Node::pick_seeds(std::vector<
       Rectangle<N> j = E[sp1].box;
       j.adjust(E[sp2].box);
       float temp = d;
-      d = max(abs(j.get_area() - E[sp1].box.get_area() - E[sp2].box.get_area()), d);
+      d = std::max(abs(j.get_area() - E[sp1].box.get_area() - E[sp2].box.get_area()), d);
       if (temp != d)
         seeds = std::make_pair(sp1, sp2);
     }
@@ -196,7 +197,7 @@ std::pair<size_t, bool> RTree<N, ElemType, M, m>::Node::pick_next(std::vector<Sp
     d1 = abs(rect1_2.first.get_area() - freeEntries[i].box.get_area());
     d2 = abs(rect1_2.second.get_area() - freeEntries[i].box.get_area());
     float temp = difmax;
-    difmax = max(abs(d1 - d2),difmax);
+    difmax = std::max(abs(d1 - d2),difmax);
     if (temp != difmax) {
       newEntry.first = i;
       newEntry.second = (d1 > d2);//0-> go to g1, 1-> go to g2
@@ -217,7 +218,7 @@ RTree<N, ElemType, M, m>::Node::split_node(std::shared_ptr<Node> &L, const Spati
 
   std::pair<size_t,size_t> seeds = pick_seeds(lastgroup);
 
-  std::shared_ptr<Node> LL(new Node);
+  std::shared_ptr<Node> LL; LL.reset(new Node);
   (*L)[(L->size = size_t(0))++] = lastgroup[seeds.first];
   (*LL)[LL->size] = lastgroup[seeds.second];
 
@@ -250,8 +251,9 @@ RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
   }
   // TODO(ADE): (COMPLETE) Split the entries and return a pointer to new node
   // caused due to split.
-  std::shared_ptr<Node> L = this;
-  ++num_of_elements;
+  std::shared_ptr<Node> L;
+  L.reset(this);
+  //++num_of_elements;
   return split_node(L, new_entry);
 }
 
@@ -287,13 +289,14 @@ template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
   const ElemType &value) {
   std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
+  ++num_of_elements;
   if (!splitted_node) {
     return;
   }
   // TODO(ADE): (COMPLETE) Last part of insert is missing i.e. when the root overflow
   // see R-tree gutman paper description.
   std::shared_ptr<Node> root2child = root_pointer_;
-  root_pointer_ = new Node;
+  root_pointer_.reset(new Node);
   SpatialObject R; R.child_pointer = root2child;
   (*root_pointer_)[root_pointer_->size++] = R;
   adjust_tree(root_pointer_, R.child_pointer, splitted_node, &R);
