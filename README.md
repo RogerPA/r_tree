@@ -27,4 +27,4 @@
 ~~~
 5 insert(P7)
 ~~~
-![4](https://github.com/yerson001/r-tree/blob/second-r-tree/IMG/4.PNG)
+![4](https://github.com/yerson001/r-tree/blob/second-r-tree/IMG/5.PNG)
