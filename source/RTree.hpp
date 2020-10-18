@@ -53,8 +53,7 @@ public:
     std::pair<size_t, size_t> pick_seeds(std::vector<SpatialObject> &E);
 
     std::pair<size_t, bool> pick_next(std::vector<SpatialObject> &freeEntries,
-                                         std::pair<Rectangle<N>, Rectangle<N>> &rect1_2,
-                                         std::shared_ptr<Node> g1, std::shared_ptr<Node> g2);
+                                         std::pair<Rectangle<N>, Rectangle<N>> &rect1_2);
 
     SpatialObject entry[M];
     size_t size = 0;
@@ -187,8 +186,7 @@ std::pair<size_t,size_t> RTree<N, ElemType, M, m>::Node::pick_seeds(std::vector<
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::pair<size_t, bool> RTree<N, ElemType, M, m>::Node::pick_next(std::vector<SpatialObject> &freeEntries,
-                                                                 std::pair<Rectangle<N>,Rectangle<N>> &rect1_2,
-                                                                 std::shared_ptr<Node> g1, std::shared_ptr<Node> g2) {
+                                                                 std::pair<Rectangle<N>,Rectangle<N>> &rect1_2) {
   float d1 = 0.0, d2 = 0.0, difmax = 0.0;
   std::pair<size_t, bool> newEntry = std::make_pair(size_t(0),0);
   for (size_t i = 0; i < freeEntries.size(); i++) {
@@ -228,7 +226,7 @@ RTree<N, ElemType, M, m>::Node::split_node(std::shared_ptr<Node> &L, const Spati
   Rectangle<N> rect1 = (*L)[0].box, rect2 = (*LL)[0].box;
 
   while (!lastgroup.empty()) {
-    std::pair<size_t, bool> an_entry = pick_next(lastgroup, std::make_pair(rect1, rect2), L, LL);
+    std::pair<size_t, bool> an_entry = pick_next(lastgroup, std::make_pair(rect1, rect2));
     if (an_entry.second) {
       (*L)[L->size++] = lastgroup[an_entry.first];
       rect1.adjust(lastgroup[an_entry.first].box);
