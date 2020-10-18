@@ -265,7 +265,7 @@ RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) { num_of_elements = 
 
 // TODO(ADE):(COMPLETE ????)
 template <size_t N, typename ElemType, size_t M, size_t m>
-RTree<N, ElemType, M, m>::~RTree() { /*delete method needed?*/ }
+RTree<N, ElemType, M, m>::~RTree() { root_pointer_.reset(); }
 
 // TODO(ADE):(COMPLETE)
 template <size_t N, typename ElemType, size_t M, size_t m>
