@@ -350,21 +350,21 @@ RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::vector<ElemType> RTree<N, ElemType, M, m>::operator[](const Rectangle<N> &box) {
 	std::vector<ElemType> result;
-	search(root_pointer_, box, result);
+	buscar(root_pointer_, box, result);
 	return result;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::vector<ElemType> RTree<N, ElemType, M, m>::at(const Rectangle<N> &box){
 	std::vector<ElemType> result;
-	search(root_pointer_, box, result);
+	buscar(root_pointer_, box, result);
 	return result;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 const std::vector<ElemType> RTree<N, ElemType, M, m>::at(const Rectangle<N> &box) const {
 	std::vector<ElemType> result;
-	buscr(root_pointer_, box, result);
+	buscar(root_pointer_, box, result);
 	return result;
 }
 
