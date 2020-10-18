@@ -90,29 +90,53 @@ void basic_r_tree_test() try {
 }
 
 int main() {
-  Rectangle<2> r;
-  r[0] = Interval(1, 2);
-  r[1] = Interval(1, 2);
+  Rectangle<2> r1;
+  r1[0] = Interval(1, 2);
+  r1[1] = Interval(1, 2);
+  
   Rectangle<2> r2;
   r2[0] = Interval(2, 3);
   r2[1] = Interval(1, 2);
-  for (Interval i : r) {
-    std::cout << i.begin() << " " << i.end() << std::endl;
-  }
 
-  std::cout << overlaps(r, r2) << std::endl;
+  Rectangle<2> r3;
+  r3[0] = Interval(4, 6);
+  r3[1] = Interval(3, 4);
 
-  RTree<2, std::string, 5>::Node my_node;
-  std::cout << "Printing the node" << std::endl;
+  Rectangle<2> r4;
+  r4[0] = Interval(2, 3);
+  r4[1] = Interval(4, 6);
 
-  for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
-    std::cout << "IN" << std::endl;
-  }
+  Rectangle<2> r5;
+  r5[0] = Interval(0, 1);
+  r5[1] = Interval(5, 6);
 
-  RTree<2, std::string, 5> r_tree;
-  r_tree.insert(r, "key");
-  std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
+  Rectangle<2> r6;
+  r6[0] = Interval(0, 1);
+  r6[1] = Interval(0, 1);  
 
-  // basic_r_tree_test();
+  Rectangle<2> r7;
+  r7[0] = Interval(2, 4);
+  r7[1] = Interval(0, 1);
+
+  RTree<2, std::string, 3> r_tree;
+  r_tree.insert(r1, "A");
+  r_tree.insert(r2, "B");
+  r_tree.insert(r3, "C");
+  r_tree.insert(r4, "D");
+  r_tree.insert(r5, "E");
+  r_tree.insert(r6, "F");
+  r_tree.insert(r7, "G");
+  
+  Rectangle<2> rs;
+  rs[0] = Interval(2, 5);
+  rs[1] = Interval(1, 5);
+  
+  std::vector<std::string> R = r_tree[rs];
+  std::cout<<"Overlapping rectangles: ";
+  for(std::string &result : R) std::cout<<result<<" "; std::cout<<"\n";
+
+  r_tree.print();
+  
+  //basic_r_tree_test();
   return 0;
 }
