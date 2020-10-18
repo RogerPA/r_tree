@@ -68,17 +68,16 @@ class RTree {
                                     const std::shared_ptr<Node> &right,
                                     SpatialObject *entry);
 
-  std::vector<ElemType> &operator[](const Rectangle<N> &box);
-  std::vector<ElemType> &at(const Rectangle<N> &box);
-  const std::vector<ElemType> &at(const Rectangle<N> &box) const;
+  std::vector<ElemType> operator[](const Rectangle<N> &box);
+  std::vector<ElemType> at(const Rectangle<N> &box);
+  const std::vector<ElemType> at(const Rectangle<N> &box) const;
   // std::vector<ElemType> kNNValue(const Rectangle<N> &box, size_t k) const;
 
-  void search(std::shared_ptr<Node> &cur_node,
+  void search(const std::shared_ptr<Node> &cur_node,
               const Rectangle<N> &box,
               std::vector<ElemType> &result);
 
   //private:
-  std::vector<ElemType> result;
   std::shared_ptr<Node> root_pointer_;
   size_t entries;
 };
@@ -157,7 +156,7 @@ RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
   Rectangle<N> bb_left = (*this)[0].box;
   Rectangle<N> bb_right = (*new_node)[0].box;
   while (!entry_list.empty()) {
-    if (size + entry_list.size() == m) {
+    if (this->size + entry_list.size() == m) {
       for (SpatialObject &obj : entry_list) {
         this->insert(obj);
       }
@@ -248,7 +247,7 @@ int RTree<N, ElemType, M, m>::Node::pickNext(std::vector<SpatialObject> &list_,
 /** R-Tree class implementation details */
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node), entries(0) {}
+RTree<N, ElemType, M, m>::RTree() : root_pointer_(std::make_shared<Node>()), entries(0) {}
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::~RTree() { root_pointer_.reset(); }
@@ -265,7 +264,7 @@ size_t RTree<N, ElemType, M, m>::size() const {
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 bool RTree<N, ElemType, M, m>::empty() const {
-  return !(entries);
+  return !entries;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -355,28 +354,28 @@ RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-std::vector<ElemType> &RTree<N, ElemType, M, m>::operator[](const Rectangle<N> &box) {
-  result.clear();
+std::vector<ElemType> RTree<N, ElemType, M, m>::operator[](const Rectangle<N> &box) {
+  std::vector<ElemType> result;
   search(root_pointer_, box, result);
   return result;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-std::vector<ElemType> &RTree<N, ElemType, M, m>::at(const Rectangle<N> &box){
-  result.clear();
+std::vector<ElemType> RTree<N, ElemType, M, m>::at(const Rectangle<N> &box){
+  std::vector<ElemType> result;
   search(root_pointer_, box, result);
   return result;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-const std::vector<ElemType> &RTree<N, ElemType, M, m>::at(const Rectangle<N> &box) const {
-  result.clear();
+const std::vector<ElemType> RTree<N, ElemType, M, m>::at(const Rectangle<N> &box) const {
+  std::vector<ElemType> result;
   search(root_pointer_, box, result);
   return result;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-void RTree<N, ElemType, M, m>::search(std::shared_ptr<Node> &cur_node,
+void RTree<N, ElemType, M, m>::search(const std::shared_ptr<Node> &cur_node,
                                       const Rectangle<N> &box,
                                       std::vector<ElemType> &result){
   for (SpatialObject &obj : *cur_node) {
@@ -393,7 +392,8 @@ void RTree<N, ElemType, M, m>::search(std::shared_ptr<Node> &cur_node,
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::print() {
-  int lastLvl = 0;
+  std::cout<<"Printing the tree ...";
+  int lastLvl = -1;
   std::queue<std::pair<std::shared_ptr<Node>, int> > Q;
   Q.push(make_pair(root_pointer_, 0));
   while (!Q.empty()) {

@@ -116,8 +116,7 @@ int main() {
 
   Rectangle<2> r7;
   r7[0] = Interval(2, 4);
-  r7[1] = Interval(0, 1);  
-  
+  r7[1] = Interval(0, 1);
 
   RTree<2, std::string, 3> r_tree;
   r_tree.insert(r1, "A");
@@ -129,11 +128,12 @@ int main() {
   r_tree.insert(r7, "G");
   
   Rectangle<2> rs;
-  rs[0] = Interval(0, 10);
-  rs[1] = Interval(0, 10);
+  rs[0] = Interval(2, 5);
+  rs[1] = Interval(1, 5);
   
-  std::vector<std::string> R = r_tree.at(rs);
-  std::cout<<"Overlaping rectangles: "<<R.size()<<std::endl;
+  std::vector<std::string> R = r_tree[rs];
+  std::cout<<"Overlapping rectangles: ";
+  for(std::string &result : R) std::cout<<result<<" "; std::cout<<"\n";
 
   r_tree.print();
   
