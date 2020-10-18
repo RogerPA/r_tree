@@ -8,4 +8,4 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include_directories($(CMAKE_CURRENT_SOURCE_DIR)/source)
 
-add_executable(r-tree_test source/test-harness.cpp)
+add_executable(r-tree_test source/main.cpp)
