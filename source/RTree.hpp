@@ -76,7 +76,7 @@ class RTree {
 
   // private:
   std::shared_ptr<Node> root_pointer_;
-  size_t entries;
+  size_t entry_count;
   std::vector<ElemType> query_result;
 };
 
@@ -239,7 +239,7 @@ void RTree<N, ElemType, M, m>::Node::pickNext(
 /** R-Tree class implementation details */
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node), entries(0) {}
+RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node), entry_count(0) {}
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::~RTree() {}
@@ -251,7 +251,7 @@ size_t RTree<N, ElemType, M, m>::dimension() const {
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 size_t RTree<N, ElemType, M, m>::size() const {
-  return entries;
+  return entry_count;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -263,6 +263,7 @@ template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N>& box,
                                       const ElemType& value) {
   std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
+  ++entry_count;
   if (!splitted_node) {
     return;
   }
