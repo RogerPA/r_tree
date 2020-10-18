@@ -80,7 +80,8 @@ public:
                                     const std::shared_ptr<Node> &right,
                                     SpatialObject *entry);
 
-  // TODO(ADE): Implement the details of all this functions
+  // TODO(ADE): (COMPLETE) Implement the details of all this functions
+  void find(const Rectangle<N> &box, std::shared_ptr<Node> &temp, std::vector<ElemType> &elements);
   std::vector<ElemType> &operator[](const Rectangle<N> &box);
   std::vector<ElemType> &at(const Rectangle<N> &box);
   const std::vector<ElemType> &at(const Rectangle<N> &box) const;
@@ -92,23 +93,33 @@ public:
 };
 
 template <size_t N, typename ElemType, size_t M, size_t m>
+void RTree<N, ElemType, M, m>::find(const Rectangle<N> &box, std::shared_ptr<Node> &temp, std::vector<ElemType> &elements) {
+  for (size_t i = size_t(0); i < temp->size; i++) {
+    if (!overlaps((*temp)[i].box, box)) {
+      find(box, (*temp)[i].child_pointer, elements);
+    }
+    if (temp->is_leaf()) {
+      elements.push_back((*temp)[i].identifier);
+    }
+  }
+}
+
+template <size_t N, typename ElemType, size_t M, size_t m>
 std::vector<ElemType> &RTree<N, ElemType, M, m>::operator[](const Rectangle<N> &box) {
   std::vector<ElemType> elements;
-
+  std::shared_ptr<Node> temp = root_pointer_;
+  find(box, temp, elements);
   return elements;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::vector<ElemType> &RTree<N, ElemType, M, m>::at(const Rectangle<N> &box) {
-  std::vector<ElemType> elements;
-
-  return elements;
+  return (*this)[box];
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 const std::vector<ElemType> &RTree<N, ElemType, M, m>::at(const Rectangle<N> &box) const {
-  std::vector<ElemType> elements;
-  return elements;
+  return (*this)[box];
 }
 
 /** Node R-tree struct implementation details*/
@@ -283,11 +294,9 @@ void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
   // see R-tree gutman paper description.
   std::shared_ptr<Node> root2child = root_pointer_;
   root_pointer_ = new Node;
-  SpatialObject R1, R2;
-  R1.child_pointer = root2child;
-  R2.child_pointer = splitted_node;
-  (*root_pointer_)[root_pointer_->size++] = R1;
-  (*root_pointer_)[root_pointer_->size++] = R2;
+  SpatialObject R; R.child_pointer = root2child;
+  (*root_pointer_)[root_pointer_->size++] = R;
+  adjust_tree(root_pointer_, R.child_pointer, splitted_node, &R);
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
