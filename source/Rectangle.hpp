@@ -22,7 +22,7 @@ class Interval {
   float& end();
   float end() const;
 
-  float get_range();
+  float get_range() const;
 
  private:
   // TODO(Roger): Replace with std::array
@@ -53,7 +53,7 @@ float Interval::begin() const { return range[0]; }
 float& Interval::end() { return range[1]; }
 float Interval::end() const { return range[1]; }
 
-float Interval::get_range() { return end() - begin(); }
+float Interval::get_range() const { return end() - begin(); }
 
 bool overlaps(const Interval& one, const Interval& lhs) {
   if (lhs.begin() < one.end() && one.begin() < lhs.end()) {
@@ -93,7 +93,7 @@ class Rectangle {
   const_iterator begin() const;
   const_iterator end() const;
 
-  float get_area();
+  float get_area() const;
 
   void reset();
 
@@ -149,9 +149,9 @@ void Rectangle<N>::reset() {
 }
 
 template <size_t N>
-float Rectangle<N>::get_area() {
+float Rectangle<N>::get_area() const {
   float area = 1.f;
-  for (Interval& interval : *this) {
+  for (const Interval& interval : *this) {
     area *= interval.get_range();
   }
   return area;
