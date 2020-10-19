@@ -116,25 +116,23 @@ int main() {
 	Rectangle<2> r7;
 	r7[0] = Interval(2, 4);
 	r7[1] = Interval(0, 1);
+	
+	for (Interval i : r) {
+    		std::cout << i.begin() << " " << i.end() << std::endl;
+  	}
 
-	RTree<2, std::string, 3> r_tree;
-	r_tree.insert(r1, "A");
-	r_tree.insert(r2, "B");
-	r_tree.insert(r3, "C");
-	r_tree.insert(r4, "D");
-	r_tree.insert(r5, "E");
-	r_tree.insert(r6, "F");
-	r_tree.insert(r7, "G");
-  
-	Rectangle<2> rs;
-	rs[0] = Interval(2, 5);
-	rs[1] = Interval(1, 5);
-  
-	std::vector<std::string> R = r_tree[rs];
-	std::cout<<"Overlapping rectangles: ";
-	for(std::string &result : R) std::cout<<result<<" "; std::cout<<"\n";
+  	std::cout << overlaps(r, r2) << std::endl;
 
-	r_tree.print();
+  	RTree<2, std::string, 5>::Node my_node;
+  	std::cout << "Printing the node" << std::endl;
+
+  	for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
+    		std::cout << "IN" << std::endl;
+  	}
+
+  	RTree<2, std::string, 5> r_tree;
+  	r_tree.insert(r, "key");
+  	std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
   
 	//basic_r_tree_test();
 	return 0;
