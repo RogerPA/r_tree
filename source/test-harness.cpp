@@ -8,14 +8,14 @@
 #include <stdexcept>
 
 void press_enter_to_continue() {
-  /* Use getline to stall until receiving input. */
-  getchar();
+	/* Use getline to stall until receiving input. */
+	getchar();
 }
 
 /* Reports that an unexpected error occurred that caused a test to fail. */
 void fail_test(const std::exception& e) {
-  std::cerr << "TEST FAILED: Unexpected exception: " << e.what() << std::endl;
-  press_enter_to_continue();
+	std::cerr << "TEST FAILED: Unexpected exception: " << e.what() << std::endl;
+	press_enter_to_continue();
 }
 
 /* This function is what the test suite uses to ensure that the KDTree works
@@ -26,19 +26,19 @@ void fail_test(const std::exception& e) {
  */
 void do_check_condition(bool expr, const std::string& rationale,
                         const std::string& file, int line) {
-  /* It worked!  Congrats. */
-  if (expr) {
-    std::cout << "PASS: " << rationale << std::endl;
-    return;
-  }
+	/* It worked!  Congrats. */
+	if (expr) {
+		std::cout << "PASS: " << rationale << std::endl;
+		return;
+	}
 
-  /* Uh oh!  The test failed! */
-  std::cout << "FAIL: " << rationale << std::endl;
-  std::cout << "  Error at " << file << ", line " << line << std::endl;
-  std::cout << "  (ENTER to continue)" << std::endl;
+	/* Uh oh!  The test failed! */
+	std::cout << "FAIL: " << rationale << std::endl;
+	std::cout << "  Error at " << file << ", line " << line << std::endl;
+	std::cout << "  (ENTER to continue)" << std::endl;
 
-  /* Pause so that the test fail stands out. */
-  press_enter_to_continue();
+	/* Pause so that the test fail stands out. */
+	press_enter_to_continue();
 }
 
 /* This macro takes in an expression and a string, then invokes
@@ -52,67 +52,88 @@ void do_check_condition(bool expr, const std::string& rationale,
 
 /* Utility function to delimit the start and end of test cases. */
 void print_banner(const std::string& header) {
-  std::cout << std::endl << "Beginning test: " << header << std::endl;
-  std::cout << std::setw(40) << std::setfill('-') << "" << std::setfill(' ')
-            << std::endl;
+	std::cout << std::endl << "Beginning test: " << header << std::endl;
+	std::cout << std::setw(40) << std::setfill('-') << "" << std::setfill(' ') << std::endl;
 }
 
 /* Utility function to signal that a test isn't begin run. */
 void test_disabled(const std::string& header) {
-  std::cout << "== Test " << header
-            << " NOT RUN: press ENTER to continue ==" << std::endl;
+	std::cout << "== Test " << header << " NOT RUN: press ENTER to continue ==" << std::endl;
 
-  /* Pause for the user to hit enter. */
-  press_enter_to_continue();
+	/* Pause for the user to hit enter. */
+	press_enter_to_continue();
 }
 
 /* Utility function to signal the end of a test. */
 void end_test() {
-  std::cout << "== end of test: press ENTER to continue ==" << std::endl;
-  press_enter_to_continue();
+	std::cout << "== end of test: press ENTER to continue ==" << std::endl;
+	press_enter_to_continue();
 }
 
 void basic_r_tree_test() try {
-  print_banner("Basic R-Tree Test.");
+	print_banner("Basic R-Tree Test.");
 
-  /* Construct the RTree. */
-  RTree<3, std::string, 5> r_tree;
-  CHECK_CONDITION(true, "R-Tree construction completed.");
+	/* Construct the RTree. */
+	RTree<3, std::string, 5> r_tree;
+	CHECK_CONDITION(true, "R-Tree construction completed.");
 
-  /* Check basic properties of the KDTree. */
-  CHECK_CONDITION(r_tree.dimension() == 3, "Dimension is three.");
-  CHECK_CONDITION(r_tree.size() == 0, "New KD tree has no elements.");
-  CHECK_CONDITION(r_tree.empty(), "New KD tree is empty.");
+	/* Check basic properties of the KDTree. */
+	CHECK_CONDITION(r_tree.dimension() == 3, "Dimension is three.");
+	CHECK_CONDITION(r_tree.size() == 0, "New KD tree has no elements.");
+	CHECK_CONDITION(r_tree.empty(), "New KD tree is empty.");
 
-  throw std::overflow_error("Testing Limits.");
-} catch (const std::exception& e) {
-  fail_test(e);
+	throw std::overflow_error("Testing Limits.");
+}	
+catch (const std::exception& e) {
+	fail_test(e);
 }
 
 int main() {
-  Rectangle<2> r;
-  r[0] = Interval(1, 2);
-  r[1] = Interval(1, 2);
-  Rectangle<2> r2;
-  r2[0] = Interval(2, 3);
-  r2[1] = Interval(1, 2);
-  for (Interval i : r) {
-    std::cout << i.begin() << " " << i.end() << std::endl;
-  }
+	Rectangle<2> r;
+	r1[0] = Interval(1, 2);
+	r1[1] = Interval(1, 2);
+  
+	Rectangle<2> r1;
+	r2[0] = Interval(2, 3);
+	r2[1] = Interval(1, 2);
 
-  std::cout << overlaps(r, r2) << std::endl;
+	Rectangle<2> r2;
+	r3[0] = Interval(4, 6);
+	r3[1] = Interval(3, 4);
 
-  RTree<2, std::string, 5>::Node my_node;
-  std::cout << "Printing the node" << std::endl;
+	Rectangle<2> r3;
+	r4[0] = Interval(2, 3);
+	r4[1] = Interval(4, 6);
 
-  for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
-    std::cout << "IN" << std::endl;
-  }
+	Rectangle<2> r4;
+	r5[0] = Interval(0, 1);
+	r5[1] = Interval(5, 6);
 
-  RTree<2, std::string, 5> r_tree;
-  r_tree.insert(r, "key");
-  std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
+	Rectangle<2> r5;
+	r6[0] = Interval(0, 1);
+	r6[1] = Interval(0, 1);  
 
-  // basic_r_tree_test();
-  return 0;
+	Rectangle<2> r6;
+	r7[0] = Interval(2, 4);
+	r7[1] = Interval(0, 1);
+	
+	for (Interval i : r) {
+    		std::cout << i.begin() << " " << i.end() << std::endl;
+  	}
+
+  	std::cout << overlaps(r, r2) << std::endl;
+
+  	RTree<2, std::string, 5>::Node my_node;
+  	std::cout << "Printing the node" << std::endl;
+
+  	for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
+    		std::cout << "IN" << std::endl;
+  	}
+
+  	RTree<2, std::string, 5> r_tree;
+  	r_tree.insert(r, "key");
+  	std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
+  
+	//basic_r_tree_test();
+	return 0;
 }
