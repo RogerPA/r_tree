@@ -90,6 +90,8 @@ void basic_r_tree_test() try {
 }
 
 int main() {
+  // Test de contruccion de R-tree
+  
   Rectangle<2> r;
   r[0] = Interval(1, 2);
   r[1] = Interval(1, 2);
