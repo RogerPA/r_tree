@@ -90,6 +90,29 @@ void basic_r_tree_test() try {
 }
 
 int main() {
-  basic_r_tree_test();
+  Rectangle<2> r;
+  r[0] = Interval(1, 2);
+  r[1] = Interval(1, 2);
+  Rectangle<2> r2;
+  r2[0] = Interval(2, 3);
+  r2[1] = Interval(1, 2);
+  for (Interval i : r) {
+    std::cout << i.begin() << " " << i.end() << std::endl;
+  }
+
+  std::cout << overlaps(r, r2) << std::endl;
+
+  RTree<2, std::string, 5>::Node my_node;
+  std::cout << "Printing the node" << std::endl;
+
+  for (RTree<2, std::string, 5>::SpatialObject current : my_node) {
+    std::cout << "IN" << std::endl;
+  }
+
+  RTree<2, std::string, 5> r_tree;
+  r_tree.insert(r, "key");
+  std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
+
+  // basic_r_tree_test();
   return 0;
 }
