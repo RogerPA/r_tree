@@ -9,6 +9,7 @@
 #include <iostream>
 #include <stdexcept>
 
+// Intervalo entre lados del R-tree
 class Interval {
  public:
   Interval();
@@ -55,6 +56,7 @@ float Interval::end() const { return range[1]; }
 
 float Interval::get_range() { return end() - begin(); }
 
+// Retorna Verdadero si exsite un overlap entre los intervalos one y lhs
 bool overlaps(const Interval& one, const Interval& lhs) {
   if (lhs.begin() < one.end() && one.begin() < lhs.end()) {
     return true;
@@ -64,6 +66,7 @@ bool overlaps(const Interval& one, const Interval& lhs) {
   }
   return false;
 }
+
 
 float get_enlargement(const Interval& rhs, const Interval& lhs) {
   float total_enlargement = 0.f;
@@ -76,6 +79,11 @@ float get_enlargement(const Interval& rhs, const Interval& lhs) {
   return total_enlargement;
 }
 
+/* Clase Rectangulo
+Tiene serie de intervalos (Bounds[N]) dependiendo de las dimensiones 
+Si tuvieramos rectangulo de 2 seria 2 intervalos
+Si tuvieramos rectangulo de 3 un cubo seria 3 intervalos
+*/
 template <size_t N>
 class Rectangle {
  public:
