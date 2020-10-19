@@ -204,6 +204,7 @@ void RTree<N, ElemType, M, m>::Node::pickSeeds(
       area = enlargement_box.get_area() - entries.at(i).box.get_area() -
              entries.at(j).box.get_area();
       if (area > max_waste) {
+        max_waste = area;
         *first = i;
         *second = j;
       }
