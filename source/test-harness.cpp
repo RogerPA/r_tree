@@ -89,31 +89,31 @@ catch (const std::exception& e) {
 }
 
 int main() {
-	Rectangle<2> r1;
+	Rectangle<2> r;
 	r1[0] = Interval(1, 2);
 	r1[1] = Interval(1, 2);
   
-	Rectangle<2> r2;
+	Rectangle<2> r1;
 	r2[0] = Interval(2, 3);
 	r2[1] = Interval(1, 2);
 
-	Rectangle<2> r3;
+	Rectangle<2> r2;
 	r3[0] = Interval(4, 6);
 	r3[1] = Interval(3, 4);
 
-	Rectangle<2> r4;
+	Rectangle<2> r3;
 	r4[0] = Interval(2, 3);
 	r4[1] = Interval(4, 6);
 
-	Rectangle<2> r5;
+	Rectangle<2> r4;
 	r5[0] = Interval(0, 1);
 	r5[1] = Interval(5, 6);
 
-	Rectangle<2> r6;
+	Rectangle<2> r5;
 	r6[0] = Interval(0, 1);
 	r6[1] = Interval(0, 1);  
 
-	Rectangle<2> r7;
+	Rectangle<2> r6;
 	r7[0] = Interval(2, 4);
 	r7[1] = Interval(0, 1);
 	
