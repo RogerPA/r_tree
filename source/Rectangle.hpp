@@ -55,7 +55,7 @@ float Interval::end() const { return range[1]; }
 
 float Interval::get_range() { return end() - begin(); }
 
-bool overlaps(const Interval& one, const Interval& lhs) {
+bool overlaps(const Interval& one, const Interval& lhs) { // si existe overlap entre los intervalos|
   if (lhs.begin() < one.end() && one.begin() < lhs.end()) {
     return true;
   }
@@ -65,7 +65,7 @@ bool overlaps(const Interval& one, const Interval& lhs) {
   return false;
 }
 
-float get_enlargement(const Interval& rhs, const Interval& lhs) {
+float get_enlargement(const Interval& rhs, const Interval& lhs) {//(viejo,nuevo)
   float total_enlargement = 0.f;
   if (rhs.end() < lhs.end()) {
     total_enlargement += lhs.end() - rhs.end();
@@ -76,7 +76,7 @@ float get_enlargement(const Interval& rhs, const Interval& lhs) {
   return total_enlargement;
 }
 
-template <size_t N>
+template <size_t N>//Dimensiones
 class Rectangle {
  public:
   typedef Interval* iterator;
