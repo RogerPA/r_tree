@@ -11,17 +11,20 @@
 #include "Rectangle.hpp"
 
 template <size_t N, typename ElemType, size_t M, size_t m = M / 2>
-class RTree {
- public:
+class RTree
+{
+public:
   struct Node;
 
-  struct SpatialObject {
+  struct SpatialObject
+  {
     Rectangle<N> box;
     ElemType identifier;
     std::shared_ptr<Node> child_pointer;
   };
 
-  struct Node {
+  struct Node
+  {
     typedef SpatialObject *iterator;
     typedef const SpatialObject *const_iterator;
 
@@ -35,11 +38,11 @@ class RTree {
     SpatialObject operator[](size_t index) const;
 
     bool is_leaf();
-    // std::shared_ptr<Node> insert(const Rectangle<N> &box,
-    //                              const ElemType &identifier,
-    //                              const std::shared_ptr<Node> &child_pointer);
 
-    std::shared_ptr<Node> insert(SpatialObject new_entry);
+    std::shared_ptr<Node> insert(const SpatialObject &new_entry);
+
+    void PickSeeds(std::vector<SpatialObject> &vec_entry, size_t *first, size_t *second);
+    void PickNext(std::vector<SpatialObject> &vec_entry, size_t *iter, Rectangle<N> &mbb_1, Rectangle<N> &mbb_2);
 
     SpatialObject entry[M];
     size_t size = 0;
@@ -58,13 +61,14 @@ class RTree {
 
   std::shared_ptr<Node> choose_node(const std::shared_ptr<Node> &current_node,
                                     const Rectangle<N> &box,
-                                    SpatialObject *entry);
+                                    SpatialObject *&entry);
 
   std::shared_ptr<Node> adjust_tree(const std::shared_ptr<Node> &parent,
                                     const std::shared_ptr<Node> &left,
                                     const std::shared_ptr<Node> &right,
                                     SpatialObject *entry);
 
+  // TODO(ADE): Implement the details of all this functions
   std::vector<ElemType> &operator[](const Rectangle<N> &box);
   std::vector<ElemType> &at(const Rectangle<N> &box);
   const std::vector<ElemType> &at(const Rectangle<N> &box) const;
@@ -77,52 +81,175 @@ class RTree {
 /** Node R-tree struct implementation details*/
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::Node::iterator
-RTree<N, ElemType, M, m>::Node::begin() {
+RTree<N, ElemType, M, m>::Node::begin()
+{
   return entry;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::Node::iterator
-RTree<N, ElemType, M, m>::Node::end() {
+RTree<N, ElemType, M, m>::Node::end()
+{
   return entry + size;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::Node::const_iterator
-RTree<N, ElemType, M, m>::Node::begin() const {
+RTree<N, ElemType, M, m>::Node::begin() const
+{
   return entry;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::Node::const_iterator
-RTree<N, ElemType, M, m>::Node::end() const {
+RTree<N, ElemType, M, m>::Node::end() const
+{
   return entry + size;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::SpatialObject
-    &RTree<N, ElemType, M, m>::Node::operator[](size_t index) {
+    &
+    RTree<N, ElemType, M, m>::Node::operator[](size_t index)
+{
   return entry[index];
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::SpatialObject
-    RTree<N, ElemType, M, m>::Node::operator[](size_t index) const {
+RTree<N, ElemType, M, m>::Node::operator[](size_t index) const
+{
   return entry[index];
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-bool RTree<N, ElemType, M, m>::Node::is_leaf() {
-  if (size && entry[0].child_pointer) {
+bool RTree<N, ElemType, M, m>::Node::is_leaf()
+{
+  if (size && entry[0].child_pointer)
     return false;
-  }
   return true;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
-RTree<N, ElemType, M, m>::Node::insert(SpatialObject new_entry) {
-  return nullptr;
+RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry)
+{
+  if (size < M)
+  {
+    entry[size++] = new_entry;
+    return nullptr;
+  }
+  // TODO(ADE): Split the vec_entry and return a pointer to new node
+  // caused due to split.
+  std::vector<SpatialObject> vec_entry(M + 1);
+  std::shared_ptr<Node> new_node = std::make_shared<Node>();
+  for (size_t i = 0; i < M; ++i)
+    vec_entry[i] = entry[i];
+  vec_entry[M] = new_entry;
+  this->size = 0;
+  size_t first, second;
+  //Pick first entry for each group
+  PickSeeds(vec_entry, &first, &second);
+  //Assign each to a group
+  insert(vec_entry[first]);
+  new_node->insert(vec_entry[second]);
+  if (first > second)
+    std::swap(first, second);
+  vec_entry.erase(vec_entry.begin() + first);
+  vec_entry.erase(vec_entry.begin() + second - 1);
+  Rectangle<N> d1 = (*this).box;
+  Rectangle<N> d2 = (*new_node).box;
+  Rectangle<N> enlargement_box_g1, enlargement_box_g2;
+  float area_g1, area_g2;
+  size_t iter;
+  //Repeat from QS2 and QS3 if not empty
+  while (!vec_entry.empty())
+  {
+    if (size + vec_entry.size() == m)
+    {
+      for (auto &e : vec_entry)
+        insert(e);
+      vec_entry.clear();
+      continue;
+    }
+    else if (new_node->size + vec_entry.size() == m)
+    {
+      for (auto &e : vec_entry)
+        insert(e);
+      vec_entry.clear();
+      continue;
+    }
+    else
+    {
+      PickNext(vec_entry, iter, d1, d2);
+      enlargement_box_g1 = d1;
+      enlargement_box_g1.adjust(vec_entry[iter].box);
+      area_g1 = enlargement_box_g1.get_area() - d1.get_area();
+      enlargement_box_g2 = d2;
+      enlargement_box_g2.adjust(vec_entry[iter].box);
+      area_g2 = enlargement_box_g2.get_area() - d2.get_area();
+      if (area_g1 < area_g2 ||
+          (area_g1 == area_g2 && d1.get_area() < d2.get_area()) ||
+          (area_g1 == area_g2 && d1.get_area() == d2.get_area()) &&
+              size < new_node->size)
+      {
+        d1.adjust(vec_entry[iter].box);
+        insert(vec_entry[iter]);
+      }
+      else
+      {
+        d2.adjust(vec_entry[iter].box);
+        insert(vec_entry[iter]);
+      }
+      vec_entry.erase(vec_entry.begin() + iter);
+    }
+  }
+  return new_node;
+}
+
+template <size_t N, typename ElemType, size_t M, size_t m>
+void RTree<N, ElemType, M, m>::Node::PickSeeds(std::vector<SpatialObject> &vec_entry, size_t *first, size_t *second)
+{
+  Rectangle<N> enlargement_box;
+  float max_area = 0.0f;
+  for (size_t i = 0; i < M; ++i)
+  {
+    for (size_t j = i + 1; j < M; ++j)
+    {
+      enlargement_box = vec_entry[i].box;
+      enlargement_box.adjust(vec_entry[j].box);
+      float d = enlargement_box.get_area() - vec_entry[i].box.get_area() - vec_entry[j].box.get_area();
+      max_area = d;
+      if (d > max_area)
+      {
+        *first = i;
+        *second = j;
+      }
+    }
+  }
+}
+
+template <size_t N, typename ElemType, size_t M, size_t m>
+void RTree<N, ElemType, M, m>::Node::PickNext(std::vector<SpatialObject> &vec_entry, size_t *iter, Rectangle<N> &mbb_1, Rectangle<N> &mbb_2)
+{
+  Rectangle<N> rect_g1, rect_g2;
+  float d1, d2; 
+  float max_diff_area = 0.0f;
+  for (size_t i = 0; i < vec_entry.size(); ++i)
+  {
+    rect_g1 = mbb_1;
+    rect_g1.adjust(vec_entry[i].box);
+    d1 = rect_g1.get_area() - mbb_1.get_area();
+    rect_g2 = mbb_2;
+    rect_g2.adjust(vec_entry[j].box);
+    d2 = rect_g2.get_area() - mbb_2.get_area();
+    float d = (d1 - d2);
+    if (d > max_diff_area)
+    {
+      max_diff_area = d;
+      *iter = i;
+    }
+  }
 }
 
 /** R-Tree class implementation details */
@@ -130,44 +257,94 @@ RTree<N, ElemType, M, m>::Node::insert(SpatialObject new_entry) {
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) {}
 
+// TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::~RTree() {}
 
+// TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
-size_t RTree<N, ElemType, M, m>::dimension() const {
+size_t RTree<N, ElemType, M, m>::dimension() const
+{
   return size_t(0);
 }
 
+// TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
-size_t RTree<N, ElemType, M, m>::size() const {
+size_t RTree<N, ElemType, M, m>::size() const
+{
   return size_t(0);
 }
 
+// TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
-bool RTree<N, ElemType, M, m>::empty() const {
+bool RTree<N, ElemType, M, m>::empty() const
+{
   return false;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
-                                      const ElemType &value) {
-  return;
+                                      const ElemType &value)
+{
+  std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
+  if (!splitted_node)
+    return;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
 RTree<N, ElemType, M, m>::choose_leaf(const std::shared_ptr<Node> &current_node,
                                       const Rectangle<N> &box,
-                                      const ElemType &value) {
-  return nullptr;
+                                      const ElemType &value)
+{
+  if (!current_node->is_leaf())
+  {
+    SpatialObject *entry;
+    std::shared_ptr<Node> next_node = choose_node(current_node, box, entry);
+    std::shared_ptr<Node> splitted_node = choose_leaf(next_node, box, value);
+    return adjust_tree(current_node, next_node, splitted_node, entry);
+  }
+  SpatialObject new_entry;
+  new_entry.box = box;
+  new_entry.identifier = value;
+  return current_node->insert(new_entry);
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
 RTree<N, ElemType, M, m>::choose_node(const std::shared_ptr<Node> &current_node,
                                       const Rectangle<N> &box,
-                                      SpatialObject *entry) {
-  return nullptr;
+                                      SpatialObject *&entry)
+{
+  float minimum_area = (*current_node)[0].box.get_area();
+
+  Rectangle<N> enlarged_box = (*current_node)[0].box;
+  enlarged_box.adjust(box);
+  float min_enlarg = enlarged_box.get_area() - minimum_area;
+
+  float enlargement, area;
+  std::shared_ptr<Node> node = (*current_node)[0].child_pointer;
+
+  entry = &(*current_node)[0];
+  for (SpatialObject &current_entry : *current_node)
+  {
+    area = current_entry.box.get_area();
+
+    enlarged_box = current_entry.box;
+    enlarged_box.adjust(box);
+    enlargement = enlarged_box.get_area() - area;
+
+    if (enlargement < min_enlarg ||
+        (enlargement == min_enlarg && area < minimum_area))
+    {
+      min_enlarg = enlargement;
+      minimum_area = area;
+      node = current_entry.child_pointer;
+      entry = &current_entry;
+    }
+  }
+
+  return node;
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -175,8 +352,19 @@ std::shared_ptr<typename RTree<N, ElemType, M, m>::Node>
 RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
                                       const std::shared_ptr<Node> &left,
                                       const std::shared_ptr<Node> &right,
-                                      SpatialObject *entry) {
-  return nullptr;
+                                      SpatialObject *entry)
+{
+  entry->box.reset();
+  for (SpatialObject current_entry : *left)
+    entry->box.adjust(current_entry.box);
+  if (!right)
+    return nullptr;
+  SpatialObject new_entry;
+  new_entry.box.reset();
+  for (SpatialObject &current_entry : *right)
+    new_entry.box.adjust(current_entry.box);
+  new_entry.child_pointer = right;
+  return parent->insert(new_entry);
 }
 
-#endif  // SOURCE_RTREE_HPP_
+#endif // SOURCE_RTREE_HPP_
