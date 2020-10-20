@@ -386,20 +386,7 @@ std::vector<ElemType>& RTree<N, ElemType, M, m>::operator[](
     return result;  
   }
 
-template <size_t N, typename ElemType, size_t M, size_t m>
-std::vector<ElemType>& RTree<N, ElemType, M, m>::at(const Rectangle<N>& box) 
-  {
-    del();
-    return result;  
-  }
 
-template <size_t N, typename ElemType, size_t M, size_t m>
-const std::vector<ElemType>& RTree<N, ElemType, M, m>::at(
-    const Rectangle<N>& box) const 
-  {
-    del();
-    return result;  
-  }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::query(const Rectangle<N>& box,
