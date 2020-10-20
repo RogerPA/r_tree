@@ -96,6 +96,19 @@ int main() {
   Rectangle<2> r2;
   r2[0] = Interval(2, 3);
   r2[1] = Interval(1, 2);
+  Rectangle<2> r3;
+  r2[0] = Interval(5, 7);
+  r2[1] = Interval(1, 5);
+  Rectangle<2> r4;
+  r2[0] = Interval(5, 9);
+  r2[1] = Interval(3, 7);
+  Rectangle<2> r5;
+  r2[0] = Interval(0, 1);
+  r2[1] = Interval(7, 10);
+  Rectangle<2> r6;
+  r2[0] = Interval(15, 20);
+  r2[1] = Interval(14, 21);
+
   for (Interval i : r) {
     std::cout << i.begin() << " " << i.end() << std::endl;
   }
@@ -111,6 +124,12 @@ int main() {
 
   RTree<2, std::string, 5> r_tree;
   r_tree.insert(r, "key");
+  r_tree.insert(r2, "key2");
+  r_tree.insert(r3, "key3");
+  r_tree.insert(r4, "key4");
+  r_tree.insert(r5, "key5");
+  r_tree.insert(r6, "key6");
+
   std::cout << "ID: " << (*r_tree.root_pointer_)[0].identifier << std::endl;
 
   // basic_r_tree_test();
