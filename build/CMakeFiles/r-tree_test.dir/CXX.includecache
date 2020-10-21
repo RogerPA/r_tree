@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/mafflu-koofy/Documents/GitHub/r-tree/source/RTree.hpp
+cstddef
+-
+iostream
+-
+memory
+-
+vector
+-
+Rectangle.hpp
+/home/mafflu-koofy/Documents/GitHub/r-tree/source/Rectangle.hpp
+
+/home/mafflu-koofy/Documents/GitHub/r-tree/source/Rectangle.hpp
+algorithm
+-
+climits
+-
+cmath
+-
+iostream
+-
+stdexcept
+-
+
+/home/mafflu-koofy/Documents/GitHub/r-tree/source/test-harness.cpp
+RTree.hpp
+/home/mafflu-koofy/Documents/GitHub/r-tree/source/RTree.hpp
+cstdio
+-
+iomanip
+-
+iostream
+-
+stdexcept
+-
+

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Rectangle.hpp"
+using namespace std;
 
 template <size_t N, typename ElemType, size_t M, size_t m = M / 2>
 class RTree {
@@ -37,7 +38,7 @@ class RTree {
     bool is_leaf();
 
     std::shared_ptr<Node> insert(const SpatialObject &new_entry);
-
+	
     SpatialObject entry[M];
     size_t size = 0;
   };
@@ -66,10 +67,13 @@ class RTree {
   std::vector<ElemType> &operator[](const Rectangle<N> &box);
   std::vector<ElemType> &at(const Rectangle<N> &box);
   const std::vector<ElemType> &at(const Rectangle<N> &box) const;
+  void buscar(Rectangle<N> &rectangulo,shared_ptr<Node> nodo_actual=nullptr);
   // std::vector<ElemType> kNNValue(const Rectangle<N> &box, size_t k) const;
 
   // private:
   std::shared_ptr<Node> root_pointer_;
+  size_t contador;
+  vector<ElemType> historial;
 };
 
 /** Node R-tree struct implementation details*/
@@ -124,47 +128,145 @@ RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
     entry[size++] = new_entry;
     return nullptr;
   }
-  // TODO(ADE): Split the entries and return a pointer to new node
-  // caused due to split.
-  return nullptr;
-}
+  /*
+  ////////////////////////////////////////////cuadratico
+  dividir un conjunto de M+1 entradas ded indice en 2 entradas
+  //usa pickseeds para elegir 2 entradas que ser�n los primeros elementos de los entradas. 
+  //asignar cada una a un grupo
+  
+  //Si todas las entradas han sido asignadas
+    //para
+  //si un grupo tiene pocas entradas que todas las demas asignarlo en el orden m  para que tenga el numero minimo 
+    //asignarlo y para
+  //usa Pick_Next para elegir la siguiente entrada a asignar.
+  //a��dalo al grupo cuyo rectangulo de cobertura tendra que ser ampliado lo menos posible
+  para acomodarlo  
+  //Resuelva los v�nculos a�adiendo la entrada al grupo con un area mas pequena, 
+  luego al de menos entradas, y luego a cualquiera de los dos 
+  */
+  vector<SpatialObject> entradas(M+1);
+  entradas[M]=new_entry;
+  size=0;
+  int entrada1,entrada2,n_id;
+  
+  double area;
+  double incre_area_1,incre_area_2;
+  
+  Rectangle<N> rectangulo,rec1,rec2;
+  for(int i=0;i<M;++i){
+	for(int j=i+1;j<M;++j){  
+		rectangulo = entradas[i].box;
+		rectangulo.adjust(entradas[j].box);
+		area = rectangulo.get_area() - entradas[i].box.get_area() - entradas[j].box.get_area();
+		if (area > 0) {
+			entrada1 = i;
+			entrada2 = j;
+		}
+	}
+  }
+  insert(entradas[entrada1]);
+  
+  shared_ptr<Node> nodo_nuevo;
+  nodo_nuevo->insert(entradas[entrada2]);
+  
+  Rectangle<N> grupo1=entradas[entrada1].box;
+  Rectangle<N> grupo2=entradas[entrada2].box;
+  
+  entradas.erase(entradas.begin()+entrada1,entradas.begin()+entrada2-1);
+  
+  while(entradas.size()!=0){
+	if(size+entradas.size()==m){
+		for(int i=0;i<entradas.size();++i){
+			insert(entradas[i]);
+		}
+		entradas.clear();
+	}
+	else if (nodo_nuevo->size + entradas.size() ==m){
+		for(int i=0;i<entradas.size();++i){
+			nodo_nuevo->insert(entradas[i]);
+		}
+		entradas.clear();
+	}
+	else{
+		double diferencia=0;
+		Rectangle<N> g1,g2;
+		double area_g1,area_g2,diferencia_area;
+		for (int i = 0; i < entradas.size(); ++i) {
+			g1 = grupo1;
+			g1.adjust(entradas.at(i).box);
+			area_g1 = g1.get_area() - grupo1.get_area();
+			
+			g2 = grupo2;
+			g2.adjust(entradas[i].box);
+			area_g2 = g2.get_area() - grupo2.get_area();
+			
+			diferencia_area = abs(area_g1 - area_g2);
+			
+			if (diferencia_area >= diferencia) {
+				diferencia = diferencia_area;
+				n_id = i;
+			}
+		}
+		rec1=grupo1;
+		rec1.adjust(entradas[n_id].box);
+		incre_area_1=rec1.get_area() - grupo1.get_area();
+		
+		rec2=grupo2;
+		rec2.adjust(entradas[n_id].box);
+		incre_area_2=rec2.get_area() - grupo2.get_area();
+		if(incre_area_1 < incre_area_2 || grupo1.get_area()<grupo2.get_area()){
+			grupo1.adjust(entradas[n_id].box);
+			insert(entradas[n_id]);
+		}
+		else{
+			grupo2.adjust(entradas[n_id].box);
+			nodo_nuevo->insert(entradas[n_id]);
+		}
+		entradas.erase(entradas.begin()+n_id);
+	  }
+    }
+	return nodo_nuevo;
+} 
 
 /** R-Tree class implementation details */
-
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
-RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) {}
+RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) {
+	contador=0;
+}
 
 // TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::~RTree() {}
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 size_t RTree<N, ElemType, M, m>::dimension() const {
-  return size_t(0);
+  return N;
 }
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 size_t RTree<N, ElemType, M, m>::size() const {
-  return size_t(0);
+  return contador;
 }
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 bool RTree<N, ElemType, M, m>::empty() const {
-  return false;
+  return size()==0;
 }
-
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
                                       const ElemType &value) {
+  contador+=1;
   std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
   if (!splitted_node) {
     return;
   }
-  // TODO(ADE): Last part of insert is missing i.e. when the root overflow
-  // see R-tree gutman paper description.
+  shared_ptr<Node> root_temporal=make_shared<Node>();
+  root_temporal->entry[0].child_pointer = root_pointer_;
+  root_temporal->size+=1;
+  adjust_tree(root_temporal, root_pointer_, splitted_node, &root_temporal->entry[0]);
+  
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -239,5 +341,23 @@ RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
   new_entry.child_pointer = right;
   return parent->insert(new_entry);
 }
-
+///
+template <size_t N, typename ElemType, size_t M, size_t m>
+	void RTree<N, ElemType, M, m>::buscar(Rectangle<N>& rectangulo,
+										 std::shared_ptr<Node> nodo_actual) {
+	//primera vez
+	if (!nodo_actual){
+		nodo_actual = root_pointer_;
+	} 
+	
+	for (const auto& ptr : *nodo_actual) {
+		if (overlaps(ptr.box, rectangulo)) {
+			if (nodo_actual->is_leaf())
+				historial.push_back(ptr.identifier);
+			else
+				buscar(rectangulo, ptr.child_pointer);
+		}
+	}
+	
+}
 #endif  // SOURCE_RTREE_HPP_
