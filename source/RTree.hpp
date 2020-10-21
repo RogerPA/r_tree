@@ -35,6 +35,8 @@ class RTree {
     SpatialObject operator[](size_t index) const;
 
     bool is_leaf();
+    void pickSeeds(std::vector<SpatialObject> &current_entries, int &seed1,
+                   int &seed2);
 
     std::shared_ptr<Node> insert(const SpatialObject &new_entry);
 
@@ -98,14 +100,14 @@ RTree<N, ElemType, M, m>::Node::end() const {
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
-typename RTree<N, ElemType, M, m>::SpatialObject
-    &RTree<N, ElemType, M, m>::Node::operator[](size_t index) {
+typename RTree<N, ElemType, M, m>::SpatialObject &
+RTree<N, ElemType, M, m>::Node::operator[](size_t index) {
   return entry[index];
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
 typename RTree<N, ElemType, M, m>::SpatialObject
-    RTree<N, ElemType, M, m>::Node::operator[](size_t index) const {
+RTree<N, ElemType, M, m>::Node::operator[](size_t index) const {
   return entry[index];
 }
 
@@ -126,7 +128,35 @@ RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
   }
   // TODO(ADE): Split the entries and return a pointer to new node
   // caused due to split.
+  std::vector<SpatialObject> current_entries(M + 1);
+  for (size_t i = 0; i < M; i++) {
+    current_entries[i] = entry[i];
+  }
+  current_entries[M] = new_entry;
+  int seed1 = -1, seed2 = -1;
+  pickSeeds(current_entries, &seed1, seed2);
+
   return nullptr;
+}
+
+template <size_t N, typename ElemType, size_t M, size_t m>
+void RTree<N, ElemType, M, m>::Node::pickSeeds(
+    std::vector<SpatialObject> &current_entries, int &seed1, int &seed2) {
+  float max_d = -1;
+  for (size_t i = 0; i < M; i++) {
+    for (size_t j = i + 1; j < M + 1; j++) {
+      Rectangle<N> covering_rectangle = current_entries[i].box;
+      covering_rectangle.adjust(current_entries[j].box);
+      float d = covering_rectangle.get_area() -
+                current_entries[i].box.get_area() -
+                current_entries[j].box.get_area();
+      if (d > max_d){
+        max_d = d;
+        seed1 = i;
+        seed2 = j;
+      }
+    }
+  }
 }
 
 /** R-Tree class implementation details */
