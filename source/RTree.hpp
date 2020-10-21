@@ -38,7 +38,7 @@ class RTree {
     bool is_leaf();
 
     std::shared_ptr<Node> insert(const SpatialObject &new_entry);
-
+	
     SpatialObject entry[M];
     size_t size = 0;
   };
@@ -67,10 +67,13 @@ class RTree {
   std::vector<ElemType> &operator[](const Rectangle<N> &box);
   std::vector<ElemType> &at(const Rectangle<N> &box);
   const std::vector<ElemType> &at(const Rectangle<N> &box) const;
+  void buscar(Rectangle<N> &rectangulo,shared_ptr<Node> nodo_actual=nullptr);
   // std::vector<ElemType> kNNValue(const Rectangle<N> &box, size_t k) const;
 
   // private:
   std::shared_ptr<Node> root_pointer_;
+  size_t contador;
+  vector<ElemType> historial;
 };
 
 /** Node R-tree struct implementation details*/
@@ -226,41 +229,44 @@ RTree<N, ElemType, M, m>::Node::insert(const SpatialObject &new_entry) {
 } 
 
 /** R-Tree class implementation details */
-
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
-RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) {}
+RTree<N, ElemType, M, m>::RTree() : root_pointer_(new Node) {
+	contador=0;
+}
 
 // TODO(ADE):
 template <size_t N, typename ElemType, size_t M, size_t m>
 RTree<N, ElemType, M, m>::~RTree() {}
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 size_t RTree<N, ElemType, M, m>::dimension() const {
-  return size_t(0);
+  return N;
 }
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 size_t RTree<N, ElemType, M, m>::size() const {
-  return size_t(0);
+  return contador;
 }
-
-// TODO(ADE):
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 bool RTree<N, ElemType, M, m>::empty() const {
-  return false;
+  return size()==0;
 }
-
+///
 template <size_t N, typename ElemType, size_t M, size_t m>
 void RTree<N, ElemType, M, m>::insert(const Rectangle<N> &box,
                                       const ElemType &value) {
+  contador+=1;
   std::shared_ptr<Node> splitted_node = choose_leaf(root_pointer_, box, value);
   if (!splitted_node) {
     return;
   }
-  // TODO(ADE): Last part of insert is missing i.e. when the root overflow
-  // see R-tree gutman paper description.
+  shared_ptr<Node> root_temporal=make_shared<Node>();
+  root_temporal->entry[0].child_pointer = root_pointer_;
+  root_temporal->size+=1;
+  adjust_tree(root_temporal, root_pointer_, splitted_node, &root_temporal->entry[0]);
+  
 }
 
 template <size_t N, typename ElemType, size_t M, size_t m>
@@ -335,5 +341,23 @@ RTree<N, ElemType, M, m>::adjust_tree(const std::shared_ptr<Node> &parent,
   new_entry.child_pointer = right;
   return parent->insert(new_entry);
 }
-
+///
+template <size_t N, typename ElemType, size_t M, size_t m>
+	void RTree<N, ElemType, M, m>::buscar(Rectangle<N>& rectangulo,
+										 std::shared_ptr<Node> nodo_actual) {
+	//primera vez
+	if (!nodo_actual){
+		nodo_actual = root_pointer_;
+	} 
+	
+	for (const auto& ptr : *nodo_actual) {
+		if (overlaps(ptr.box, rectangulo)) {
+			if (nodo_actual->is_leaf())
+				historial.push_back(ptr.identifier);
+			else
+				buscar(rectangulo, ptr.child_pointer);
+		}
+	}
+	
+}
 #endif  // SOURCE_RTREE_HPP_
